@@ -57,7 +57,7 @@ def getConstants(file):
 			elif (row[0] == 'Rear tire contact patch'):
 				pointDict['RTCP'] = [float(row[1]), float(row[2]), float(row[3])]
 
-	if (len(pointDict) < 12):
+	if (len(pointDict) < 20):
 		raise ValueError('ERROR: Suspension points file does not have all required points. Check that point names haven\'t been changed or have spaces added to end.')
 	
 	print('Suspension values read:')

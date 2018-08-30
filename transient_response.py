@@ -186,7 +186,6 @@ const_slip_angle = 8 #step input for front
 
 front_RCH = 0
 rear_RCH = 0
-TLLTD = 0.5 #front tire lateral load transfer distribution
 front_roll_stiffness = getRollStiffness(constants, 'FRONT', front_track) + 12*constants['FARS'] 
 rear_roll_stiffness =  getRollStiffness(constants, 'REAR', front_track) + 12*constants['RARS'] 
 

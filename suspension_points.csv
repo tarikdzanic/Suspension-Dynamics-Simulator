@@ -1,0 +1,39 @@
+Point,X,Y,Z
+Front top forward chassis pickup,-5.3,14.2,9
+Front top rearward chassis pickup,5.3,14.2,9
+Front bottom forward chassis pickup,-5,9.75,4.5
+Front bottom rearward chassis pickup,5,9.75,4.5
+Front upper kingpin pickup,0.42,26.5,13.5
+Front lower kingpin pickup,-0.42,26.5,7.5
+Front tire contact patch,0,27,0
+,,,
+Rear top forward chassis pickup,55,16,9.5
+Rear top rearward chassis pickup,65,16,9.5
+Rear bottom forward chassis pickup,57.5,13.5,5
+Rear bottom rearward chassis pickup,65,13.5,5
+Rear upper kingpin pickup,59.5,24.5,13.5
+Rear lower kingpin pickup,61.2,24.5,7.5
+Rear tire contact patch,61,25,0
+,,,
+Property ,Value,Unit,
+Front camber offset relative to kingpin,-1.5,Deg,Static camber angle - kingpin inclination angle
+Front toe,1,Deg,
+Front tire spring rate,870,lbs/in,
+Front shock spring rate,500,lbs/in,
+Front motion ratio,2,,Shock movement/wheel movement
+Front anti-roll stiffness,0,ft-lbs/deg,Additional from roll bar only. If no ARB
+Front damping ratio,1,,Damping constant / critical damping constant
+Front corner unsprung mass,30,lbs,Half of front unsprung mass
+Front corner sprung mass,100,lbs,Half of front sprung mass
+Rear camber offset relative to kingpin,-1.5,Deg,Static camber angle - kingpin inclination angle
+Rear toe,1,Deg,
+Rear tire spring rate,870,lbs/in,
+Rear shock spring rate,500,lbs/in,
+Rear motion ratio,2,,Shock movement/wheel movement
+Rear anti-roll stiffness,0,ft-lbs/deg,Additional from roll bar only. If no ARB
+Rear damping ratio,1,,Damping constant / critical damping constant
+Rear corner unsprung mass,30,lbs,Half of rear unsprung mass
+Rear corner sprung mass,200,lbs,Half of rear sprung mass
+Center of gravity height,6.5,in,
+,,,
+Polar moment of inertia about COG z-axis,270000,lbs-in^2,"If you don't have an exact value, use disk centered at COG with diameter = wheelbase and vehicle sprung mass"

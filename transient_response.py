@@ -57,7 +57,7 @@ def getConstants(file):
 			elif (row[0] == 'Rear tire contact patch'):
 				pointDict['RTCP'] = [float(row[1]), float(row[2]), float(row[3])]
 
-	if (len(pointDict) < 20):
+	if (len(pointDict) < 12):
 		raise ValueError('ERROR: Suspension points file does not have all required points. Check that point names haven\'t been changed or have spaces added to end.')
 	
 	print('Suspension values read:')
@@ -110,11 +110,11 @@ def interpolate(xvals, yvals, x):
 
 def getCamberFromNormalForce(curves, normal_force, nominal_normal_force):
 	dF = nominal_normal_force - normal_force
-	return interpolate(curves[0], curves[1], dF/12.)
+	return interpolate(curves[0], curves[1], dF)
 
 def getRCHfromNormalForce(curves, normal_force, nominal_normal_force):
 	dF = nominal_normal_force - normal_force
-	return interpolate(curves[0], curves[2], dF/12.)
+	return interpolate(curves[0], curves[2], dF)
 
 
 
@@ -186,6 +186,7 @@ const_slip_angle = 8 #step input for front
 
 front_RCH = 0
 rear_RCH = 0
+TLLTD = 0.5 #front tire lateral load transfer distribution
 front_roll_stiffness = getRollStiffness(constants, 'FRONT', front_track) + 12*constants['FARS'] 
 rear_roll_stiffness =  getRollStiffness(constants, 'REAR', front_track) + 12*constants['RARS'] 
 
@@ -206,7 +207,7 @@ writer = csv.writer(csvfile, delimiter=',')
 writer.writerow(['t', 'YawGradient', 'Roll', 'FL normal force', 'FR normal force', 'RL normal force', 'RR normal force'])
 
 
-for i in range(0, 10000):
+for i in range(0, 1000):
 
 
 	# get new roll center heights and cambers from the normal forces
@@ -261,8 +262,9 @@ for i in range(0, 10000):
 
 	# yaw torque is the difference in torques between the front lateral force and rear lateral force on the yaw center (assumed to be center of gravity) in xy plane
 	yawtorque = front_force*(1 - rear_weight_bias)*wheelbase - rear_force*rear_weight_bias*wheelbase
+	
 	# derivative of yaw is the yaw torque divided by the polar moment of inertia. (Not 2nd derivative because we consider yaw to be in the car's reference frame)
-	dyaw_dt = 57.2957795*yawtorque/constants['PMOI'] # rad to degree
+	dyaw_dt = 57.2957795*yawtorque/constants['PMOI']
 
 	# Step in time
 	yaw += dt*dyaw_dt
@@ -270,6 +272,6 @@ for i in range(0, 10000):
 	droll_dt += dt*d2roll_dt2
 
 	#write solution
-	if (i%100 == 0):
-		writer.writerow([i/1000.*dt, -dyaw_dt, roll, FL_normal_force, FR_normal_force, RL_normal_force, RR_normal_force])
+	if (i%10 == 0):
+		writer.writerow([i/100.*dt, -dyaw_dt, roll, FL_normal_force, FR_normal_force, RL_normal_force, RR_normal_force])
 

@@ -57,7 +57,7 @@ def getConstants(file):
 			elif (row[0] == 'Rear tire contact patch'):
 				pointDict['RTCP'] = [float(row[1]), float(row[2]), float(row[3])]
 
-	if (len(pointDict) < 12):
+	if (len(pointDict) < 20):
 		raise ValueError('ERROR: Suspension points file does not have all required points. Check that point names haven\'t been changed or have spaces added to end.')
 	
 	print('Suspension values read:')
@@ -211,6 +211,7 @@ for i in range(0, 1000):
 
 
 	# get new roll center heights and cambers from the normal forces
+	# RCH is average of the the left and right RCH
 	front_RCH = .5*getRCHfromNormalForce(frontcurves, FR_normal_force, FR_ss_normal_force) + .5*getRCHfromNormalForce(frontcurves, FL_normal_force, FL_ss_normal_force)
 	rear_RCH = .5*getRCHfromNormalForce(rearcurves, RR_normal_force, RR_ss_normal_force) + .5*getRCHfromNormalForce(rearcurves, RL_normal_force, RL_ss_normal_force)
 	frontleft_camber = getCamberFromNormalForce(frontcurves, FL_normal_force, FL_ss_normal_force) 
@@ -264,7 +265,7 @@ for i in range(0, 1000):
 	yawtorque = front_force*(1 - rear_weight_bias)*wheelbase - rear_force*rear_weight_bias*wheelbase
 	
 	# derivative of yaw is the yaw torque divided by the polar moment of inertia. (Not 2nd derivative because we consider yaw to be in the car's reference frame)
-	dyaw_dt = 57.2957795*yawtorque/constants['PMOI']
+	dyaw_dt = 57.2957795*yawtorque/constants['PMOI'] # 57.29 rad/deg 
 
 	# Step in time
 	yaw += dt*dyaw_dt

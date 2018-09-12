@@ -262,7 +262,7 @@ for i in range(0, 10000):
 	# yaw torque is the difference in torques between the front lateral force and rear lateral force on the yaw center (assumed to be center of gravity) in xy plane
 	yawtorque = front_force*(1 - rear_weight_bias)*wheelbase - rear_force*rear_weight_bias*wheelbase
 	# derivative of yaw is the yaw torque divided by the polar moment of inertia. (Not 2nd derivative because we consider yaw to be in the car's reference frame)
-	dyaw_dt = yawtorque/constants['PMOI']
+	dyaw_dt = 57.2957795*yawtorque/constants['PMOI'] # rad to degree
 
 	# Step in time
 	yaw += dt*dyaw_dt

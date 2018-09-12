@@ -211,8 +211,8 @@ for i in range(0, 1000):
 
 
 	# get new roll center heights and cambers from the normal forces
-	#front_RCH = .5*getRCHfromNormalForce(frontcurves, FR_normal_force, FR_ss_normal_force) + .5*getRCHfromNormalForce(frontcurves, FL_normal_force, FL_ss_normal_force)
-	#rear_RCH = .5*getRCHfromNormalForce(rearcurves, RR_normal_force, RR_ss_normal_force) + .5*getRCHfromNormalForce(rearcurves, RL_normal_force, RL_ss_normal_force)
+	front_RCH = .5*getRCHfromNormalForce(frontcurves, FR_normal_force, FR_ss_normal_force) + .5*getRCHfromNormalForce(frontcurves, FL_normal_force, FL_ss_normal_force)
+	rear_RCH = .5*getRCHfromNormalForce(rearcurves, RR_normal_force, RR_ss_normal_force) + .5*getRCHfromNormalForce(rearcurves, RL_normal_force, RL_ss_normal_force)
 	frontleft_camber = getCamberFromNormalForce(frontcurves, FL_normal_force, FL_ss_normal_force) 
 	frontright_camber = getCamberFromNormalForce(frontcurves, FR_normal_force, FR_ss_normal_force) 
 	rearleft_camber = getCamberFromNormalForce(rearcurves, RL_normal_force, RL_ss_normal_force)

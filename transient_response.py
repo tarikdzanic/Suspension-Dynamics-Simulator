@@ -191,9 +191,9 @@ front_roll_stiffness = getRollStiffness(constants, 'FRONT', front_track) + 12*co
 rear_roll_stiffness =  getRollStiffness(constants, 'REAR', front_track) + 12*constants['RARS'] 
 
 
-# find critical damping coefficients. gamma_crit = 2*sqrt(k*m). k = roll stiffness . m = longitudinal moment of inertia
-front_crit_damping_coeff = 2*math.sqrt(front_roll_stiffness*longitudinal_MOI)
-rear_crit_damping_coeff = 2*math.sqrt(rear_roll_stiffness*longitudinal_MOI)
+# find critical damping coefficients. gamma_crit = sqrt(k*m). k = roll stiffness . m = longitudinal moment of inertia
+front_crit_damping_coeff = math.sqrt(front_roll_stiffness*longitudinal_MOI)
+rear_crit_damping_coeff = math.sqrt(rear_roll_stiffness*longitudinal_MOI)
 
 # set damping coefficients = damping_ratio*crit_damping_coeff
 front_gamma = constants['FDR']*front_crit_damping_coeff

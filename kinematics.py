@@ -55,10 +55,7 @@ def readPoints(file):
 
 	if (len(pointDict) < 16):
 		raise ValueError('ERROR: Suspension points file does not have all required points. Check that point names haven\'t been changed or have spaces added to end.')
-	
-	print('Suspension points read:')
-	for key in pointDict:
-		print (key + ':		' + str(pointDict[key]))
+
 
 	return pointDict
 

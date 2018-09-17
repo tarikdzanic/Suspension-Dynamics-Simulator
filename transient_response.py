@@ -4,7 +4,7 @@
 # Constraints:
 # - assumes moment of inertia about center of gravity axis is idealized as a point mass MOI
 # - assumes chassis torsional stiffness is infinite (front roll = rear roll)
-
+# - step input is given as a slip angle of 8 deg for both front tires. This can be improved or changed.
 
 import csv
 import math
@@ -107,6 +107,8 @@ def interpolate(xvals, yvals, x):
 			y0 = yvals[i]
 			y1 = yvals[i+1]
 			return ((x - x0)/(x1 - x0) * (y1 - y0) + y0)
+	# throw error if point isn't within the data set
+	raise ValueError("ERROR: Trying to interpolate a point outside the data range.")
 
 def getCamberFromNormalForce(curves, normal_force, nominal_normal_force):
 	dF = nominal_normal_force - normal_force
@@ -116,14 +118,43 @@ def getRCHfromNormalForce(curves, normal_force, nominal_normal_force):
 	dF = nominal_normal_force - normal_force
 	return interpolate(curves[0], curves[2], dF)
 
+def calculateSettlingTime(dt, dyawdtlist):
+	maxyawgrad = max(dyawdtlist)
+	for i in range(0, len(dyawdtlist)):
+		if (dyawdtlist[i]/maxyawgrad < 0.01): # if yaw gradient is less than 1% of max yaw gradient
+			converged = True
+			for j in range(i, len(dyawdtlist)): # check that remaining steps do not exceed 1%
+				if (abs(dyawdtlist[j])/abs(maxyawgrad) > 0.01):
+					converged = False
+			if (converged):
+				return(dt*i/100.0)
 
+def calculateOvershoot(dyawdtlist):
+	maxyawgrad = max(dyawdtlist)
+	minyawgrad = min(dyawdtlist)
+	if (minyawgrad > 0.00):
+		return (0.00)
+	else:
+		return (-minyawgrad/maxyawgrad*100.0)
 
+dt = 0.1 # time step
+const_slip_angle = 8 # step input for front 
+con_tol_yawgrad = 0.1 # convergence tolerance for yaw gradient
 
 
 fitFunc = getFittingFunction('TireFit/lateral_tire_fitting_function.csv')
 constants = getConstants('suspension_points.csv')
 
+
+print('')
+print('')
+print('Reading suspension points (suspension_points.csv) and tire fitting function (TireFit/lateral_tire_fitting_function.csv).')
+
 # right and up are positive from the driver's view
+
+
+
+
 
 
 # ------------- Constants ----------------
@@ -143,6 +174,9 @@ total_mass = 2*(RR_ss_normal_force + FR_ss_normal_force)
 rear_weight_bias = RR_ss_normal_force/(RR_ss_normal_force + FR_ss_normal_force)
 
 # --------------------------------------
+
+
+
 
 # ------------ Get curves --------------
 # get camber and RCH curves
@@ -181,37 +215,41 @@ RL_normal_force = RL_ss_normal_force
 # --------------------------------------
 
 
-dt = 0.1
-const_slip_angle = 8 #step input for front 
+# ------- Calculate coefficients -------
 
-front_RCH = 0
-rear_RCH = 0
-TLLTD = 0.5 #front tire lateral load transfer distribution
-front_roll_stiffness = getRollStiffness(constants, 'FRONT', front_track) + 12*constants['FARS'] 
-rear_roll_stiffness =  getRollStiffness(constants, 'REAR', front_track) + 12*constants['RARS'] 
+front_roll_stiffness = getRollStiffness(constants, 'FRONT', front_track) + 12.0*constants['FARS'] 
+rear_roll_stiffness =  getRollStiffness(constants, 'REAR', front_track) + 12.0*constants['RARS'] 
 
 
 # find critical damping coefficients. gamma_crit = sqrt(k*m). k = roll stiffness . m = longitudinal moment of inertia
 front_crit_damping_coeff = math.sqrt(front_roll_stiffness*longitudinal_MOI)
 rear_crit_damping_coeff = math.sqrt(rear_roll_stiffness*longitudinal_MOI)
 
+
 # set damping coefficients = damping_ratio*crit_damping_coeff
 front_gamma = constants['FDR']*front_crit_damping_coeff
 rear_gamma = constants['RDR']*rear_crit_damping_coeff
 
+# --------------------------------------
 
 
-# Open output file
+
+
+# Open output file for writing
+results_yaw	 	 = []
+results_dyawdt	 = []
+results_roll	 = []
 csvfile = open('output.csv', 'w')
 writer = csv.writer(csvfile, delimiter=',')
 writer.writerow(['t', 'YawGradient', 'Roll', 'FL normal force', 'FR normal force', 'RL normal force', 'RR normal force'])
 
 
+print('Starting simulation...')
+
 for i in range(0, 1000):
 
 
 	# get new roll center heights and cambers from the normal forces
-	# RCH is average of the the left and right RCH
 	front_RCH = .5*getRCHfromNormalForce(frontcurves, FR_normal_force, FR_ss_normal_force) + .5*getRCHfromNormalForce(frontcurves, FL_normal_force, FL_ss_normal_force)
 	rear_RCH = .5*getRCHfromNormalForce(rearcurves, RR_normal_force, RR_ss_normal_force) + .5*getRCHfromNormalForce(rearcurves, RL_normal_force, RL_ss_normal_force)
 	frontleft_camber = getCamberFromNormalForce(frontcurves, FL_normal_force, FL_ss_normal_force) 
@@ -265,14 +303,35 @@ for i in range(0, 1000):
 	yawtorque = front_force*(1 - rear_weight_bias)*wheelbase - rear_force*rear_weight_bias*wheelbase
 	
 	# derivative of yaw is the yaw torque divided by the polar moment of inertia. (Not 2nd derivative because we consider yaw to be in the car's reference frame)
-	dyaw_dt = 57.2957795*yawtorque/constants['PMOI'] # 57.29 rad/deg 
+	dyaw_dt = 57.296*yawtorque/constants['PMOI'] #57.296 rad/deg
 
 	# Step in time
 	yaw += dt*dyaw_dt
 	roll += dt*droll_dt
 	droll_dt += dt*d2roll_dt2
 
+	results_yaw.append(yaw)
+	results_dyawdt.append(-dyaw_dt)
+	results_roll.append(roll)
+
 	#write solution
 	if (i%10 == 0):
 		writer.writerow([i/100.*dt, -dyaw_dt, roll, FL_normal_force, FR_normal_force, RL_normal_force, RR_normal_force])
+		
+
+
+
+err = abs(max(results_dyawdt[-100:], key = abs)) # max absolute value of yaw gradient in last 100 iterations
+if (err < con_tol_yawgrad):
+	print('Solution converged to yaw gradient tolerance: ' + str(err))
+else:
+	print('Solution did not converge to specified yaw gradient tolerance. Results may be inaccurate. Yaw gradient deviation in last 100 steps: '+ str(err))
+
+print('')
+print('Results:')
+print('Transient settling time					:		%.3f' % calculateSettlingTime(dt, results_dyawdt) + ' s') #find response time to reach less than 1% of max yaw gradient
+print('Negative yaw-gradient overshoot (%% of max gradient)	: 		%.1f' % calculateOvershoot(results_dyawdt) + ' %')
+print('Steady state yaw					:		%.1f' % (sum(results_yaw[-100:])/100.0) + ' deg') #average yaw in last 100 iterations
+print('Steady state roll 					:		%.1f' % (sum(results_roll[-100:])/100.0) + ' deg') #average roll in last 100 iterations
+
 
